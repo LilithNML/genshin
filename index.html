@@ -1,12 +1,13 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#121212">
+  <meta name="theme-color" content="#121212" />
   <title>Genshin Pity Tracker</title>
-  <link rel="manifest" href="data:application/manifest+json,{\"name\":\"Genshin Pity Tracker\",\"short_name\":\"Pity Tracker\",\"start_url\":\".\",\"display\":\"standalone\",\"background_color\":\"%23121212\",\"theme_color\":\"%23121212\",\"icons\":[{\"src\":\"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Genshin_Impact_logo.svg/1024px-Genshin_Impact_logo.svg.png\",\"sizes\":\"192x192\",\"type\":\"image/png\"}]}" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
   <style>
     :root {
       --bg: #121212;
@@ -67,46 +68,51 @@
 <body>
   <div class="container">
     <h2>Genshin Pity Tracker</h2>
+
     <div class="card">
       <h3>Estado actual</h3>
       <p><strong>Tiradas desde último 4⭐:</strong> <span id="pity4">0</span></p>
       <p><strong>Tiradas desde último 5⭐:</strong> <span id="pity5">0</span></p>
       <p class="warning" id="warnings"></p>
-    </div><div class="card">
-  <h3>Registrar tirada</h3>
-  <input type="text" id="characterName" placeholder="Nombre del personaje (opcional)">
-  <div class="row">
-    <button onclick="addPull()">Solo tirada</button>
-    <button onclick="addPull('4')">Personaje 4⭐</button>
-    <button onclick="addPull('5')">Personaje 5⭐</button>
+    </div>
+
+    <div class="card">
+      <h3>Registrar tirada</h3>
+      <input type="text" id="characterName" placeholder="Nombre del personaje (opcional)">
+      <div class="row">
+        <button onclick="addPull()">Solo tirada</button>
+        <button onclick="addPull('4')">Personaje 4⭐</button>
+        <button onclick="addPull('5')">Personaje 5⭐</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Historial</h3>
+      <div id="history"></div>
+    </div>
+
+    <div class="card">
+      <h3>Datos</h3>
+      <button onclick="exportData()">📤 Exportar</button>
+      <button onclick="importData()">📥 Importar</button>
+      <input type="file" id="fileInput" accept="application/json" style="display:none" onchange="handleFile(event)">
+    </div>
   </div>
-</div>
 
-<div class="card">
-  <h3>Historial</h3>
-  <div id="history"></div>
-</div>
-
-<div class="card">
-  <h3>Datos</h3>
-  <button onclick="exportData()">📤 Exportar</button>
-  <button onclick="importData()">📥 Importar</button>
-  <input type="file" id="fileInput" accept="application/json" style="display:none" onchange="handleFile(event)">
-</div>
-
-  </div>  <script>
+  <script>
     let pity4 = 0, pity5 = 0, history = [];
 
     function updateDisplay() {
       document.getElementById('pity4').textContent = pity4;
       document.getElementById('pity5').textContent = pity5;
-      const w = [];
-      if (pity4 >= 9) w.push(`⚠️ Estás a ${10 - pity4} de un 4⭐ asegurado`);
-      if (pity5 >= 89) w.push(`⚠️ Estás a ${90 - pity5} de un 5⭐ asegurado`);
-      document.getElementById('warnings').innerHTML = w.join('<br>');
+
+      const warnings = [];
+      if (pity4 >= 9) warnings.push(`⚠️ Estás a ${10 - pity4} de un 4⭐ asegurado`);
+      if (pity5 >= 89) warnings.push(`⚠️ Estás a ${90 - pity5} de un 5⭐ asegurado`);
+      document.getElementById('warnings').innerHTML = warnings.join('<br>');
 
       document.getElementById('history').innerHTML = history.map(e =>
-        `<div class='entry'>${e.time} - ${e.type} ${e.name ? `: ${e.name}` : ''}</div>`
+        `<div class='entry'>${e.time} - ${e.type}${e.name ? `: ${e.name}` : ''}</div>`
       ).join('');
 
       localStorage.setItem('pity4', pity4);
@@ -165,25 +171,11 @@
       updateDisplay();
 
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./service-worker.js')
-          .then(reg => console.log('SW registrado'))
+        navigator.serviceWorker.register('service-worker.js')
+          .then(() => console.log('SW registrado'))
           .catch(err => console.warn('SW no registrado', err));
       }
     });
-  </script>  <!-- Service Worker inline (versión mínima) -->  <script type="text/javascript">
-    const cacheName = "pity-app-v1";
-    const contentToCache = ["./"];
-
-    self.addEventListener('install', e => {
-      e.waitUntil(
-        caches.open(cacheName).then(cache => cache.addAll(contentToCache))
-      );
-    });
-
-    self.addEventListener('fetch', e => {
-      e.respondWith(
-        caches.match(e.request).then(r => r || fetch(e.request))
-      );
-    });
-  </script></body>
+  </script>
+</body>
 </html>
